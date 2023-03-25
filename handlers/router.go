@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Handler func(s *discordgo.Session, m *discordgo.Message, input string) error
+type Handler func(s *discordgo.Session, m *discordgo.Message, input string) (output string, err error)
 
 // HandlerFuncs is a map of string to Handler funcs
 // The string is the command that will trigger the handler
@@ -54,10 +54,12 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	command := segments[0][1:]
 	input := strings.Join(segments[1:], " ")
 
-	err := HandlerFuncs[command](s, m.Message, input)
+	output, err := HandlerFuncs[command](s, m.Message, input)
 	if err != nil {
 		log.WithError(err).Error("error handling command")
 	}
+
+	s.ChannelMessageSend(m.ChannelID, output)
 }
 
 // RegisterHandler takes a string and a Handler func and adds it to the

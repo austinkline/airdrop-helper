@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"flag"
 	"github.com/bwmarrin/discordgo"
 	"strings"
@@ -11,7 +12,7 @@ import (
 // StatusHandler is a func that is a Handler func
 // It prints the status of the bot to the discordgo
 // session that called it.
-func StatusHandler(s *discordgo.Session, m *discordgo.Message, input string) error {
+func StatusHandler(s *discordgo.Session, m *discordgo.Message, input string) (output string, err error) {
 	// read the input using a flag parser
 
 	var (
@@ -27,9 +28,10 @@ func StatusHandler(s *discordgo.Session, m *discordgo.Message, input string) err
 	checks := []string{"I'm alive!"}
 
 	if db || all {
-		c, err := database.GetConnection()
+		var c *sql.DB
+		c, err = database.GetConnection()
 		if err != nil {
-			return err
+			return
 		}
 
 		defer c.Close()
@@ -42,8 +44,8 @@ func StatusHandler(s *discordgo.Session, m *discordgo.Message, input string) err
 		}
 	}
 
-	_, err := s.ChannelMessageSend(m.ChannelID, strings.Join(checks, "\n"))
-	return err
+	_, err = s.ChannelMessageSend(m.ChannelID, strings.Join(checks, "\n"))
+	return
 }
 
 func init() {

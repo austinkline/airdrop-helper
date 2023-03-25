@@ -9,7 +9,7 @@ import (
 // EchoHandler is a func that is a Handler func
 // It echos the contents of its message content back to the discordgo
 // session that called it.
-func EchoHandler(s *discordgo.Session, m *discordgo.Message, input string) error {
+func EchoHandler(s *discordgo.Session, m *discordgo.Message, input string) (output string, err error) {
 	// read the contents of input using a flag parser
 	flags := flag.NewFlagSet("echo", flag.ContinueOnError)
 
@@ -18,12 +18,12 @@ func EchoHandler(s *discordgo.Session, m *discordgo.Message, input string) error
 	)
 
 	flags.BoolVar(&reverse, "reverse", false, "whether to reverse the input")
-	err := flags.Parse(strings.Split(input, " "))
+	err = flags.Parse(strings.Split(input, " "))
 	if err != nil {
-		return err
+		return
 	}
 
-	output := input
+	output = input
 	// reverse the word order if the reverse flag is set
 	if reverse {
 		words := strings.Split(input, " ")
@@ -34,7 +34,7 @@ func EchoHandler(s *discordgo.Session, m *discordgo.Message, input string) error
 	}
 
 	_, err = s.ChannelMessageSend(m.ChannelID, output)
-	return err
+	return
 }
 
 func init() {
