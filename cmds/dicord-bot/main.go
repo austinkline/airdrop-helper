@@ -13,6 +13,7 @@ import (
 	"github.com/austinkline/airdrop/handlers"
 
 	_ "github.com/austinkline/airdrop/commands/account"
+	_ "github.com/austinkline/airdrop/commands/coinbase"
 	_ "github.com/austinkline/airdrop/commands/network"
 )
 
