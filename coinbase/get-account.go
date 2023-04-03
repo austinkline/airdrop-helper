@@ -2,6 +2,7 @@ package coinbase
 
 import (
 	"encoding/json"
+	"github.com/austinkline/airdrop/db"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -10,14 +11,46 @@ import (
 
 const (
 	listAccountsURL = "https://api.coinbase.com/v2/accounts"
+
+	queryAccountBySymbol = "SELECT account_id FROM cb_account WHERE symbol = ? LIMIT 1"
 )
 
 var (
 	ethAccountID = os.Getenv("CB_ETH_ACCOUNT_ID")
 )
 
-func GetEthAccount() (account Account, err error) {
-	url := listAccountsURL + "/" + ethAccountID
+func GetIdForSymbol(symbol string) (id string, err error) {
+	// query our mysql database for the id
+	// of the account with the given symbol
+
+	// if there are multiple accounts with the same symbol,
+	// return the first one
+
+	// get a connection to our database
+	connection, err := db.GetConnection()
+	if err != nil {
+		return
+	}
+
+	// query the database
+	rows, err := connection.Query(queryAccountBySymbol, symbol)
+	if err != nil {
+		return
+	}
+
+	// iterate over the rows
+	for rows.Next() {
+		err = rows.Scan(&id)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func GetAccount(id string) (account Account, err error) {
+	url := listAccountsURL + "/" + id
 	req, _ := http.NewRequest("GET", url, nil)
 	err = signRequest(req)
 	if err != nil {
@@ -48,19 +81,17 @@ func GetEthAccount() (account Account, err error) {
 	return
 }
 
+func GetEthAccount() (account Account, err error) {
+	return GetAccount(ethAccountID)
+}
+
 func GetAccountForSymbol(symbol string) (account Account, err error) {
-	accounts, err := GetAccounts()
+	id, err := GetIdForSymbol(symbol)
 	if err != nil {
 		return
 	}
 
-	for _, a := range accounts {
-		if a.Currency.Code == symbol {
-			account = a
-			return
-		}
-	}
-
+	account, err = GetAccount(id)
 	return
 }
 

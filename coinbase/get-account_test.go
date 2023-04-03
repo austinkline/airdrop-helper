@@ -15,3 +15,8 @@ func TestGetEthereumAccount(t *testing.T) {
 	_, err := GetEthAccount()
 	assert.Nil(t, err)
 }
+
+func TestGetAccountForSymbol(t *testing.T) {
+	_, err := GetAccountForSymbol("eth")
+	assert.Nil(t, err)
+}
